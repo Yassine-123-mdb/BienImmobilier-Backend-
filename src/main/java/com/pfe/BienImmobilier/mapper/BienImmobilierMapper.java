@@ -14,11 +14,12 @@ public interface BienImmobilierMapper {
     // Mapping des propriétés simples
     @Mapping(source = "categorie", target = "categorie", qualifiedByName = "mapCategorie")
     @Mapping(source = "commune", target = "commune", qualifiedByName = "mapCommune")
-    @Mapping(source = "gouvernorat", target = "gouvernorat", qualifiedByName = "mapGouvernorat")
     @Mapping(source = "proprietaire", target = "proprietaire", qualifiedByName = "mapProprietaire")
     @Mapping(source = "utilisateursFavoris", target = "utilisateursFavoris", qualifiedByName = "mapFavoris")
     @Mapping(source = "avis", target = "avis", qualifiedByName = "mapAvis")
     @Mapping(source = "images", target = "images", qualifiedByName = "mapImages")
+    @Mapping(source = "gouvernorat", target = "gouvernorat", qualifiedByName = "mapGouvernorat")
+
     BienImmobilierDTO toDTO(BienImmobilier bienImmobilier);
 
     List<BienImmobilierDTO> toDtoList(List<BienImmobilier> biens);
@@ -47,14 +48,16 @@ public interface BienImmobilierMapper {
     }
 
     @Named("mapCommune")
-    default String mapCommune(Commune commune) {
-        return commune != null ? commune.getNom() : null;
+    default Long mapCommune(Commune commune) {
+        return commune != null ? commune.getId() : null;
     }
 
+
     @Named("mapGouvernorat")
-    default String mapGouvernorat(Gouvernorat gouvernorat) {
-        return gouvernorat != null ? gouvernorat.getNom() : null;
+    default Long mapGouvernorat(Gouvernorat gouvernorat) {
+        return gouvernorat != null ? gouvernorat.getId() : null;
     }
+
 
     @Named("mapProprietaire")
     default String mapProprietaire(Utilisateur proprietaire) {

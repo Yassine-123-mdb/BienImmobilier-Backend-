@@ -1,5 +1,6 @@
 package com.pfe.BienImmobilier.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ public class Commune {
 
     @ManyToOne
     @JoinColumn(name = "gouvernorat_id")
+    @JsonBackReference
     private Gouvernorat gouvernorat;
 }
 

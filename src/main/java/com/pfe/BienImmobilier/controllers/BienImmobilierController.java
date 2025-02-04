@@ -2,8 +2,11 @@ package com.pfe.BienImmobilier.controllers;
 
 import com.pfe.BienImmobilier.model.BienImmobilierDTO;
 import com.pfe.BienImmobilier.entities.BienImmobilier;
+import com.pfe.BienImmobilier.model.BienImmobilierFilterDTO;
 import com.pfe.BienImmobilier.services.impl.BienImmobilierServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +19,11 @@ import java.util.List;
 public class BienImmobilierController {
 
     private final BienImmobilierServiceImpl bienImmobilierService;
+    @PostMapping("/search")
+    public ResponseEntity<Page<BienImmobilierDTO>> searchBiens(
+            @RequestBody BienImmobilierFilterDTO filter, Pageable pageable) {
+        return ResponseEntity.ok(bienImmobilierService.searchBiens(filter, pageable));
+    }
 
     @GetMapping("/top-offers")
     public ResponseEntity<List<BienImmobilierDTO>> getTopOffers() {

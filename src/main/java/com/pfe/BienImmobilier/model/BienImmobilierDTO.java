@@ -40,8 +40,8 @@ public class BienImmobilierDTO {
 
     // Relations
     private String categorie;
-    private String commune;
-    private String gouvernorat;
+    private Long  commune;
+    private Long gouvernorat;
     private String proprietaire;
     private List<String> avis;
     private Set<Long> utilisateursFavoris;

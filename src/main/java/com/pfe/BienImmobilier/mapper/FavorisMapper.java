@@ -24,10 +24,10 @@ public interface FavorisMapper {
     // Mapping de BienImmobilier vers BienImmobilierDTO
     @Mapping(source = "categorie", target = "categorie", qualifiedByName = "mapCategorie")
     @Mapping(source = "commune", target = "commune", qualifiedByName = "mapCommune")
-    @Mapping(source = "gouvernorat", target = "gouvernorat", qualifiedByName = "mapGouvernorat")
     @Mapping(source = "avis", target = "avis", qualifiedByName = "mapAvis")
     @Mapping(source = "utilisateursFavoris", target = "utilisateursFavoris", qualifiedByName = "mapUtilisateursFavoris")
     @Mapping(source = "images", target = "images", qualifiedByName = "mapImages")
+    @Mapping(source = "gouvernorat", target = "gouvernorat", qualifiedByName = "mapGouvernorat")
     @Mapping(source = "proprietaire", target = "proprietaire", qualifiedByName = "mapProprietaire")  // Ajout du mappage
     BienImmobilierDTO mapToModel(BienImmobilier bienImmobilier);
 
@@ -43,12 +43,6 @@ public interface FavorisMapper {
     @Named("mapCommune")
     default String mapCommune(Commune commune) {
         return commune != null ? commune.getNom() : null;
-    }
-
-    // Méthode de conversion pour "Gouvernorat" vers "String"
-    @Named("mapGouvernorat")
-    default String mapGouvernorat(Gouvernorat gouvernorat) {
-        return gouvernorat != null ? gouvernorat.getNom() : null;
     }
 
     // Méthode de conversion pour "Utilisateur" vers "String"
@@ -77,7 +71,10 @@ public interface FavorisMapper {
         }
         return images.stream().map(Image::getName).collect(Collectors.toList());
     }
-
+    @Named("mapGouvernorat")
+    default String mapGouvernorat(Gouvernorat gouvernorat) {
+        return gouvernorat != null ? gouvernorat.getNom() : null;
+    }
     // Ajoutez cette méthode pour mapper un "Utilisateur" vers "String" pour le champ "proprietaire"
     @Named("mapProprietaire")
     default String mapProprietaire(Utilisateur proprietaire) {

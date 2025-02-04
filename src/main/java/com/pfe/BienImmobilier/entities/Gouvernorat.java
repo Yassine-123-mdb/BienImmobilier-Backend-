@@ -1,5 +1,6 @@
 package com.pfe.BienImmobilier.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -21,5 +22,6 @@ public class Gouvernorat {
     private String nom;
 
     @OneToMany(mappedBy = "gouvernorat", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Commune> communes;
 }

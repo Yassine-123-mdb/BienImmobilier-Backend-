@@ -1,5 +1,5 @@
 package com.pfe.BienImmobilier.entities;
 
-public enum TransactionType {
+public enum TypeTransaction {
     VENTE, LOCATION
 }
