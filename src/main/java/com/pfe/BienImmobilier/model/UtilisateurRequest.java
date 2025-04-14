@@ -13,6 +13,8 @@ import java.util.Set;
 public class UtilisateurRequest {
     private String nom;
     private String prenom;
+    private String adresse;
+    private String region;
     private String email;
     private String motDePasse;
     private String telephone;

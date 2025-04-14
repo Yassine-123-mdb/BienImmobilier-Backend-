@@ -1,29 +1,57 @@
 package com.pfe.BienImmobilier.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "reservations")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
+@Entity
+@Table(name = "reservations")
 public class Reservation {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Date dateReservation;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime dateDebut;
 
-    @ManyToOne
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime dateFin;
+
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private LocalDateTime dateReservation;
+
+
+    // Statut de la réservation
+    @Enumerated(EnumType.STRING)
+    private EStatutReservation statut = EStatutReservation.EN_ATTENTE;
+
+    // Utilisateur ayant fait la réservation
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "utilisateur_id")
-    private Utilisateur utilisateur;  // Associe la réservation à un utilisateur
+    private Utilisateur utilisateur;
 
-    @ManyToOne
-    @JoinColumn(name = "bien_immobilier_id")
-    private BienImmobilier bienImmobilier;  // Associe la réservation à un bien immobilier
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "propietaire_id")
+    private Utilisateur propietaire;
+
+    // Bien réservé
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bien_id")
+    private BienImmobilier bienImmobilier;
+
+
+
+
+    private Boolean confirmeParProprietaire = false;
+
+    private Boolean annuleParClient = false;
+
+    private String commentaire; // Pour refus ou autres remarques
 }

@@ -16,5 +16,7 @@ public interface IimagesService {
     Image uploadImageForBien(MultipartFile file, Long bienId) throws IOException;
     List<Image> getImagesForBien(Long bienId);
     ResponseEntity<byte[]> getImage(Long id) throws IOException;
+    void uploadImageForUser(MultipartFile file, Long userId) throws IOException;
+    byte[] getUserImage(Long userId);
     void deleteImage(Long id);
 }

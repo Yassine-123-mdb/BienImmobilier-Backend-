@@ -1,64 +1,55 @@
 package com.pfe.BienImmobilier.controllers;
 
-import com.pfe.BienImmobilier.entities.Utilisateur;
-import com.pfe.BienImmobilier.mapper.UtilisateurMapper;
-import com.pfe.BienImmobilier.model.UtilisateurDTO;
-import com.pfe.BienImmobilier.model.UtilisateurRequest;
+import com.pfe.BienImmobilier.model.*;
 import com.pfe.BienImmobilier.services.inter.UtilisateurService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Optional;
+import java.util.List;
 
 @RestController
-@RequestMapping("/utilisateurs")
+@RequestMapping("/api/admin/users")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class UtilisateurController {
-    @Autowired
-    private UtilisateurService utilisateurService;
 
-    @Autowired
-    private UtilisateurMapper utilisateurMapper;
+    private final UtilisateurService userService;
 
-    @PostMapping("/register")
-    public ResponseEntity<UtilisateurDTO> register(@RequestBody UtilisateurRequest request) {
-        Utilisateur savedUser = utilisateurService.enregistrerUtilisateur(
-                Utilisateur.builder().nom(request.getNom())
-                        .prenom(request.getPrenom())
-                        .email(request.getEmail())
-                        .motDePasse(request.getMotDePasse())
-                        .telephone(request.getTelephone())
-                        .build(),
-                request.getRoles()
-        );
-
-        return ResponseEntity.ok(utilisateurMapper.toDTO(savedUser));
+    @GetMapping
+    public Page<AdminUserDTO> getUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "nom") String sortBy) {
+        return userService.getUsersPaginated(page, size, sortBy);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UtilisateurRequest request) {
-        Optional<Utilisateur> utilisateurOpt = utilisateurService.trouverParEmail(request.getEmail());
-
-        if (utilisateurOpt.isPresent()) {
-            Utilisateur utilisateur = utilisateurOpt.get();
-
-            if (utilisateurService.verifierMotDePasse(request.getMotDePasse(), utilisateur.getMotDePasse())) {
-                return ResponseEntity.ok("Connexion réussie !");
-            } else {
-                return ResponseEntity.status(401).body("Mot de passe incorrect.");
-            }
-        }
-
-        return ResponseEntity.status(404).body("Utilisateur non trouvé.");
+    @GetMapping("/search")
+    public List<AdminUserDTO> searchUsers(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String role) {
+        return userService.searchUsers(query, role);
     }
 
-    @GetMapping("/{email}")
-    public ResponseEntity<UtilisateurDTO> getByEmail(@PathVariable String email) {
-        return utilisateurService.trouverParEmail(email)
-                .map(utilisateurMapper::toDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<AdminUserDTO> toggleStatus(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.toggleUserStatus(id));
+    }
+
+    @GetMapping("/{id}/reservations")
+    public ResponseEntity<UserReservationsDTO> getReservations(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserReservations(id));
+    }
+
+    @GetMapping("/{id}/annonces")
+    public ResponseEntity<UserAnnoncesDTO> getAnnonces(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getUserAnnonces(id));
     }
 }

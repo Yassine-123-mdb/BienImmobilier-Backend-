@@ -5,7 +5,7 @@ import com.pfe.BienImmobilier.entities.Utilisateur;
 import com.pfe.BienImmobilier.mapper.FavorisMapper;
 import com.pfe.BienImmobilier.model.BienImmobilierDTO;
 import com.pfe.BienImmobilier.repository.BienImmobilierRepository;
-import com.pfe.BienImmobilier.repository.UtilisateurRepository;
+import com.pfe.BienImmobilier.repository.UserRepository;
 import com.pfe.BienImmobilier.services.inter.FavorisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.util.List;
 @Transactional
 public class FavorisServiceImpl implements FavorisService {
 
-    private final UtilisateurRepository utilisateurRepository;
+    private final UserRepository utilisateurRepository;
     private final BienImmobilierRepository bienImmobilierRepository;
 
     @Override

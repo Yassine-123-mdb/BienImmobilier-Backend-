@@ -1,26 +1,16 @@
 package com.pfe.BienImmobilier.entities;
 
-import com.pfe.BienImmobilier.entities.BienImmobilier;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
-@Builder
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Image {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idImage;
@@ -30,16 +20,14 @@ public class Image {
 
     @Column(name = "IMAGE", length = 4048576)
     @Lob
-    private byte[] image; // Changez en byte[] pour stocker l'image en binaire
+    private byte[] image;
 
     @ManyToOne
     @JoinColumn(name = "bien_id")
     @JsonIgnore
     private BienImmobilier bienImmobilier;
 
-    @ManyToOne
-    @JoinColumn(name = "client_id")
+    @OneToOne(mappedBy = "image")
     @JsonIgnore
     private Utilisateur utilisateur;
-
 }

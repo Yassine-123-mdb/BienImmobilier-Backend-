@@ -1,6 +1,9 @@
 package com.pfe.BienImmobilier.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.pfe.BienImmobilier.entities.ETypeLocation;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,6 +26,7 @@ public class BienImmobilierDTO {
     private double surface;
     private String localisation;
 
+    private String typeLocation;
     // Attributs spécifiques
     private Integer nombresChambres;
     private Integer nombresPieces;
@@ -37,7 +41,12 @@ public class BienImmobilierDTO {
     private double superficie;
     private Boolean isVerifieAdmin; // Utilisation de Boolean
     private Boolean constructible; // Utilisation de Boolean
-
+    private Boolean wifi;
+    private Boolean chargesIncluses;
+    private Boolean meuble;
+    private String statutJuridique;
+    private Boolean ascenseur;
+    private Boolean interphone ;
     // Relations
     private String categorie;
     private Long  commune;

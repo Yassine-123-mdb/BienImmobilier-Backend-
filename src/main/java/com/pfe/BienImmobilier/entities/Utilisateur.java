@@ -1,5 +1,6 @@
 package com.pfe.BienImmobilier.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,14 +22,22 @@ public class Utilisateur {
 
     private String nom;
     private String prenom;
+
+    @Column(unique = true, nullable = false)
     private String email;
+
+    private String region;
+    private String adresse;
+
+    @Column(nullable = false)
     private String motDePasse;
     private String telephone;
+    private boolean enabled;
 
-    // Relation @OneToMany avec l'entité Image
-    // Assurez-vous que la classe Image a une relation correctement définie vers l'entité Utilisateur (avec @ManyToOne)
-    @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Image> images;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "image_id", referencedColumnName = "idImage")
+    private Image image;
+
 
     // Relation @ManyToMany pour les rôles, avec un joinTable qui indique les clés étrangères
     @ManyToMany(fetch = FetchType.EAGER)  // Utilisation de FetchType.EAGER pour charger les rôles en même temps que l'utilisateur
@@ -37,8 +46,7 @@ public class Utilisateur {
             joinColumns = @JoinColumn(name = "utilisateur_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles = new HashSet<>();
-
+    private List<Role> roles;
     // Relation @OneToMany avec l'entité BienImmobilier, le propriétaire de chaque bien
     @OneToMany(mappedBy = "proprietaire", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BienImmobilier> biensImmobiliers;
@@ -56,6 +64,7 @@ public class Utilisateur {
     // Relation @OneToMany avec l'entité Reservation, chaque utilisateur a des réservations
     // La relation est bidirectionnelle, donc chaque réservation doit avoir un champ utilisateur (avec @ManyToOne)
     @OneToMany(mappedBy = "utilisateur", cascade = CascadeType.ALL, orphanRemoval = true)
+
     private List<Reservation> reservations;
 
 }

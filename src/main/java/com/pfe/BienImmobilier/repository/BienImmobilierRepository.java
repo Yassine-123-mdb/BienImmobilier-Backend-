@@ -2,6 +2,7 @@ package com.pfe.BienImmobilier.repository;
 
 import com.pfe.BienImmobilier.entities.BienImmobilier;
 import com.pfe.BienImmobilier.entities.TypeTransaction;
+import com.pfe.BienImmobilier.entities.Utilisateur;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +15,7 @@ import java.util.List;
 @Repository
 public interface BienImmobilierRepository extends JpaRepository<BienImmobilier, Long> {
 
-
+    List<BienImmobilier> findByProprietaire(Utilisateur proprietaire);
     @Query("SELECT b FROM BienImmobilier b WHERE " +
             "(:typeTransaction IS NULL OR b.typeTransaction = :typeTransaction) AND " +
             "(COALESCE(:categorie, '') = '' OR b.categorie.nom = :categorie) AND " +

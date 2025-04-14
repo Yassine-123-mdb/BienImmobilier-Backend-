@@ -2,19 +2,27 @@ package com.pfe.BienImmobilier.mapper;
 
 import com.pfe.BienImmobilier.entities.Role;
 import com.pfe.BienImmobilier.entities.Utilisateur;
+import com.pfe.BienImmobilier.model.AdminUserDTO;
 import com.pfe.BienImmobilier.model.UtilisateurDTO;
-import org.springframework.stereotype.Component;
+import com.pfe.BienImmobilier.model.UtilisateurResponse;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
-import java.util.stream.Collectors;
+import java.util.List;
 
-@Component
-public class UtilisateurMapper {
-    public UtilisateurDTO toDTO(Utilisateur utilisateur) {
-        return new UtilisateurDTO(
-                utilisateur.getId(),
-                utilisateur.getNom(),
-                utilisateur.getEmail(),
-                utilisateur.getRoles().stream().map(Role::getRoleType).collect(Collectors.toSet())
-        );
+@Mapper(componentModel = "spring")
+public interface UtilisateurMapper {
+    UtilisateurResponse toResponse(Utilisateur utilisateur);
+    @Mapping(target = "role", source = "roles", qualifiedByName = "getMainRole")
+    @Mapping(source = "image.name", target = "imageUrl")
+    AdminUserDTO toDto(Utilisateur utilisateur);
+
+    @Named("getMainRole")
+    default String getMainRole(List<Role> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return "CLIENT";
+        }
+        return roles.get(0).getRoleType().name();
     }
 }

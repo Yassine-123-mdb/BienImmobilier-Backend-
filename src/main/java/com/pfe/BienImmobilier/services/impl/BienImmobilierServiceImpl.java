@@ -5,9 +5,13 @@ import com.pfe.BienImmobilier.mapper.BienImmobilierMapper;
 import com.pfe.BienImmobilier.model.BienImmobilierDTO;
 import com.pfe.BienImmobilier.model.BienImmobilierFilterDTO;
 import com.pfe.BienImmobilier.repository.BienImmobilierRepository;
+import com.pfe.BienImmobilier.repository.UserRepository;
+import com.pfe.BienImmobilier.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +24,9 @@ public class BienImmobilierServiceImpl {
     private final BienImmobilierRepository bienImmobilierRepository;
     private final BienImmobilierMapper bienImmobilierMapper;
     private final CommuneService communeService; // Injection du service Commune
+    private final JwtUtil jwtUtils;
+    private final HttpServletRequest request;
+    private final UserRepository utilisateurRepository;
 
     public Page<BienImmobilierDTO> searchBiens(BienImmobilierFilterDTO filter, Pageable pageable) {
         TypeTransaction typeTransaction = null;
@@ -78,27 +85,52 @@ public class BienImmobilierServiceImpl {
 
         return bienImmobilierMapper.toDTO(bien);
     }
+    public List<BienImmobilierDTO> getBiensDuProprietaireConnecte() {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token JWT manquant ou invalide.");
+        }
+
+        String token = authHeader.substring(7);
+        String email = jwtUtils.extractEmail(token);
+
+        Utilisateur proprietaire = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé."));
+
+        List<BienImmobilier> biens = bienImmobilierRepository.findByProprietaire(proprietaire);
+        return biens.stream().map(bienImmobilierMapper::toDTO).collect(Collectors.toList());
+    }
+
 
     public BienImmobilierDTO createBien(BienImmobilier bien) {
-        // Récupérer la commune avec son ID
+        // Vérifier et récupérer la commune
         Commune commune = bien.getCommune();
         if (commune == null || commune.getId() == null) {
             throw new RuntimeException("La commune est requise pour créer un bien.");
         }
-
-        // Vérifier que la commune existe bien
         commune = communeService.getCommuneById(commune.getId());
-
-        // Récupérer le gouvernorat associé à la commune
         Gouvernorat gouvernorat = commune.getGouvernorat();
 
-        // Assigner les relations
+        // 🔐 Extraire le token JWT depuis l'en-tête
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token manquant ou invalide.");
+        }
+        String token = authHeader.substring(7); // Remove "Bearer "
+
+        // 🔐 Extraire l'email depuis le token
+        String email = jwtUtils.extractEmail(token);
+
+        // 🔐 Trouver l'utilisateur
+        Utilisateur proprietaire = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        // Associer l'utilisateur en tant que propriétaire
+        bien.setProprietaire(proprietaire);
         bien.setCommune(commune);
         bien.setGouvernorat(gouvernorat);
 
-        // Sauvegarde du bien
         BienImmobilier savedBien = bienImmobilierRepository.save(bien);
-
         return bienImmobilierMapper.toDTO(savedBien);
     }
 
@@ -106,7 +138,6 @@ public class BienImmobilierServiceImpl {
         BienImmobilier bien = bienImmobilierRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bien non trouvé"));
 
-        // Mise à jour des champs
         bien.setTitre(bienDetails.getTitre());
         bien.setDescription(bienDetails.getDescription());
         bien.setAdresse(bienDetails.getAdresse());

@@ -2,8 +2,10 @@ package com.pfe.BienImmobilier.services.impl;
 
 import com.pfe.BienImmobilier.entities.BienImmobilier;
 import com.pfe.BienImmobilier.entities.Image;
+import com.pfe.BienImmobilier.entities.Utilisateur;
 import com.pfe.BienImmobilier.repository.BienImmobilierRepository;
 import com.pfe.BienImmobilier.repository.ImagesRepository;
+import com.pfe.BienImmobilier.repository.UserRepository;
 import com.pfe.BienImmobilier.services.inter.IimagesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -27,6 +29,9 @@ public class ImagesServiceImpl implements IimagesService {
 
     @Autowired
     BienImmobilierRepository bienImmobilierRepository;
+
+    @Autowired
+    UserRepository utilisateurRepository;
 
     @Override
     public Image uploadImage(MultipartFile file) throws IOException {
@@ -69,6 +74,35 @@ public class ImagesServiceImpl implements IimagesService {
     @Override
     public void deleteImage(Long id) {
         imageRepository.deleteById(id);
+    }
+    @Override
+    public void uploadImageForUser(MultipartFile file, Long userId) throws IOException {
+        Utilisateur utilisateur = utilisateurRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec ID : " + userId));
+
+        // Supprimer l’ancienne image s’il y en a une
+        if (utilisateur.getImage() != null) {
+            imageRepository.delete(utilisateur.getImage());
+        }
+
+        // Sauvegarde de la nouvelle image
+        Image image = new Image();
+        image.setName(file.getOriginalFilename());
+        image.setType(file.getContentType());
+        image.setImage(file.getBytes());
+
+        Image savedImage = imageRepository.save(image);
+
+        utilisateur.setImage(savedImage);
+        utilisateurRepository.save(utilisateur);
+    }
+
+    @Override
+    public byte[] getUserImage(Long userId) {
+        return utilisateurRepository.findById(userId)
+                .map(Utilisateur::getImage)
+                .map(Image::getImage)
+                .orElse(null);
     }
 
 }

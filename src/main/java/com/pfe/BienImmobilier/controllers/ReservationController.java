@@ -1,36 +1,61 @@
 package com.pfe.BienImmobilier.controllers;
 
 import com.pfe.BienImmobilier.entities.Reservation;
+import com.pfe.BienImmobilier.model.IndisponibiliteDTO;
+import com.pfe.BienImmobilier.model.ReservationDTO;
 import com.pfe.BienImmobilier.services.inter.ReservationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/reservations")
+@RequestMapping("/api/reservations")
+@RequiredArgsConstructor
 public class ReservationController {
 
-    @Autowired
-    private ReservationService reservationService;
+    private final ReservationService reservationService;
 
-    @PostMapping("/ajouter")
-    public Reservation reserverBien(@RequestBody Reservation reservation) {
-        return reservationService.reserverBien(reservation);
+    @PostMapping("/{bienId}")
+    public ResponseEntity<ReservationDTO> creerReservation(
+            @RequestBody Reservation reservation,
+            @PathVariable Long bienId
+            ) {
+        ReservationDTO dto = reservationService.creerReservation(reservation, bienId);
+        return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/liste")
-    public List<Reservation> listerReservations() {
-        return reservationService.listerReservations();
+
+    @PostMapping("/proprietaire/{id}/confirmer")
+    public ResponseEntity<ReservationDTO> confirmer(@PathVariable Long id) {
+        return ResponseEntity.ok(reservationService.confirmerReservation(id));
     }
 
-    @GetMapping("/{id}")
-    public Reservation getReservationById(@PathVariable Long id) {
-        return reservationService.getReservationById(id);
+    @PostMapping("/proprietaire/{id}/annuler")
+    public ResponseEntity<Void> annuler(@PathVariable Long id) {
+        reservationService.annulerReservationParClient(id);
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/annuler/{id}")
-    public void annulerReservation(@PathVariable Long id) {
-        reservationService.annulerReservation(id);
+    @GetMapping("/user")
+    public ResponseEntity<List<ReservationDTO>> getByUser() {
+        return ResponseEntity.ok(reservationService.getReservationsParUtilisateur());
+    }
+
+    @GetMapping("/proprietaire")
+    public ResponseEntity<List<ReservationDTO>> getByProprietaire() {
+        return ResponseEntity.ok(reservationService.getReservationsParProprietaire());
+    }
+
+    @GetMapping("/bien/{bienId}")
+    public ResponseEntity<List<ReservationDTO>> getByBien(@PathVariable Long bienId) {
+        return ResponseEntity.ok(reservationService.getReservationsParBien(bienId));
+    }
+    @GetMapping("/bien/{id}/indisponibilites")
+    public ResponseEntity<List<IndisponibiliteDTO>> getIndisponibilites(@PathVariable Long id) {
+        List<IndisponibiliteDTO> indisponibilites = reservationService.getIndisponibilitesParBien(id);
+        return ResponseEntity.ok(indisponibilites);
     }
 }
