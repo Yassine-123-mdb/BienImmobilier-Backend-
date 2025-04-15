@@ -15,13 +15,13 @@ import java.util.List;
 public interface UtilisateurMapper {
     UtilisateurResponse toResponse(Utilisateur utilisateur);
     @Mapping(target = "role", source = "roles", qualifiedByName = "getMainRole")
-    @Mapping(source = "image.name", target = "imageUrl")
+
     AdminUserDTO toDto(Utilisateur utilisateur);
 
     @Named("getMainRole")
     default String getMainRole(List<Role> roles) {
         if (roles == null || roles.isEmpty()) {
-            return "CLIENT";
+            return "VISITEUR";
         }
         return roles.get(0).getRoleType().name();
     }

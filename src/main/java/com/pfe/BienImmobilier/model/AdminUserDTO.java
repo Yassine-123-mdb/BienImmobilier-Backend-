@@ -12,7 +12,7 @@ public class AdminUserDTO {
     private String email;
     private boolean enabled;
     private String role; // Stocke directement le nom du rôle
-    private String imageUrl;
+
 }
 
 

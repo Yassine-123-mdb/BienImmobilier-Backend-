@@ -26,9 +26,14 @@ public interface UserRepository extends JpaRepository<Utilisateur, Long> {
             "LOWER(u.nom) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "LOWER(u.prenom) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
             "LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))) " +
-            "AND (:role IS NULL OR EXISTS (SELECT r FROM u.roles r WHERE LOWER(r.roleType) = LOWER(:role)))")
+            "AND (" +
+            ":role IS NULL OR " +
+            "(:role = 'VISITEUR' AND SIZE(u.roles) = 1 AND EXISTS (SELECT r FROM u.roles r WHERE r.roleType = com.pfe.BienImmobilier.entities.RoleType.VISITEUR)) OR " +
+            "(:role <> 'VISITEUR' AND EXISTS (SELECT r FROM u.roles r WHERE LOWER(r.roleType) = LOWER(:role)))" +
+            ")")
     List<Utilisateur> findBySearchCriteria(@Param("query") String query,
                                            @Param("role") String role);
+
 
     @EntityGraph(attributePaths = {"reservations"})
     @Query("SELECT u FROM Utilisateur u WHERE u.id = :userId")
