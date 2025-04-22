@@ -1,4 +1,4 @@
-package com.pfe.BienImmobilier.util;
+package com.pfe.BienImmobilier.security;
 
 import io.jsonwebtoken.*;
 import com.pfe.BienImmobilier.entities.Utilisateur;

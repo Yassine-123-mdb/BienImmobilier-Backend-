@@ -7,7 +7,7 @@ import com.pfe.BienImmobilier.model.*;
 
 import com.pfe.BienImmobilier.repository.RoleRepository;
 import com.pfe.BienImmobilier.repository.UserRepository;
-import com.pfe.BienImmobilier.util.JwtUtil;
+import com.pfe.BienImmobilier.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;

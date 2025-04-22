@@ -52,7 +52,7 @@ public class BienImmobilierController {
         return ResponseEntity.ok(bienImmobilierService.createBien(bien));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/proprietaire/{id}")
     public ResponseEntity<BienImmobilierDTO> updateBien(@PathVariable Long id, @RequestBody BienImmobilier bienDetails) {
         return ResponseEntity.ok(bienImmobilierService.updateBien(id, bienDetails));
     }

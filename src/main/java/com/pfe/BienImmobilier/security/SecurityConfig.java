@@ -40,7 +40,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**","/api/biens/user/search/**","api/admin/users/**").permitAll()
+                        .requestMatchers("/api/auth/**","/api/biens/user/search/**","api/admin/users/**","/api/notifications/**","/ws","/api/admin/annonces/**","/api/admin/statistics/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/biens/user/**","/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/gouvernorats/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()

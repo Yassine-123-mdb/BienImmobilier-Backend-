@@ -1,6 +1,8 @@
 package com.pfe.BienImmobilier.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.pfe.BienImmobilier.entities.Avis;
+import com.pfe.BienImmobilier.entities.Categorie;
 import com.pfe.BienImmobilier.entities.ETypeLocation;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -39,7 +41,8 @@ public class BienImmobilierDTO {
     private Boolean vueSurMer; // Utilisation de Boolean
     private Integer nombresEtages;
     private double superficie;
-    private Boolean isVerifieAdmin; // Utilisation de Boolean
+    private Integer isVerifieAdmin;
+    private String statutAdmin;
     private Boolean constructible; // Utilisation de Boolean
     private Boolean wifi;
     private Boolean chargesIncluses;
@@ -48,11 +51,12 @@ public class BienImmobilierDTO {
     private Boolean ascenseur;
     private Boolean interphone ;
     // Relations
-    private String categorie;
-    private Long  commune;
-    private Long gouvernorat;
-    private String proprietaire;
-    private List<String> avis;
+    private Categorie categorie;
+    private CommuneDTO  commune;
+//    private Long gouvernorat;
+//    private String proprietaire;
+    private UtilisateurResponse proprietaire;
+    private List<AvisRequestDTO> avis;
     private Set<Long> utilisateursFavoris;
 
     // Added images field to DTO

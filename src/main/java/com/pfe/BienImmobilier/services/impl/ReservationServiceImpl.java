@@ -1,21 +1,19 @@
 package com.pfe.BienImmobilier.services.impl;
 
-import com.pfe.BienImmobilier.entities.BienImmobilier;
-import com.pfe.BienImmobilier.entities.EStatutReservation;
-import com.pfe.BienImmobilier.entities.Reservation;
-import com.pfe.BienImmobilier.entities.Utilisateur;
+import com.pfe.BienImmobilier.entities.*;
 import com.pfe.BienImmobilier.mapper.ReservationMapper;
 import com.pfe.BienImmobilier.model.IndisponibiliteDTO;
+import com.pfe.BienImmobilier.model.NotificationDTO;
 import com.pfe.BienImmobilier.model.ReservationDTO;
 import com.pfe.BienImmobilier.repository.BienImmobilierRepository;
 import com.pfe.BienImmobilier.repository.ReservationRepository;
 import com.pfe.BienImmobilier.repository.UserRepository;
 import com.pfe.BienImmobilier.services.inter.EmailService;
+import com.pfe.BienImmobilier.services.inter.NotificationService;
 import com.pfe.BienImmobilier.services.inter.ReservationService;
-import com.pfe.BienImmobilier.util.JwtUtil;
+import com.pfe.BienImmobilier.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -30,61 +28,82 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final BienImmobilierRepository bienRepository;
     private final UserRepository utilisateurRepository;
-    private final JwtUtil jwtService; // Ton service JWT
+    private final JwtUtil jwtService;
     private final HttpServletRequest request;
     private final ReservationMapper reservationMapper;
     private final BienImmobilierRepository bienImmobilierRepository;
     private final EmailService emailService;
+    private final NotificationService notificationService; // ✅ Ajout du service de notification
 
-
-        @Override
-        public ReservationDTO creerReservation(Reservation reservation, Long bienId) {
-            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                throw new RuntimeException("Token manquant ou invalide.");
-            }
-            String token = authHeader.substring(7); // Remove "Bearer "
-
-            // 🔐 Extraire l'email depuis le token
-            String email = jwtService.extractEmail(token);
-            Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
-
-            BienImmobilier bien = bienImmobilierRepository.findById(bienId)
-                    .orElseThrow(() -> new RuntimeException("Bien non trouvé"));
-
-            reservation.setUtilisateur(utilisateur);
-            reservation.setBienImmobilier(bien);
-            reservation.setPropietaire(bien.getProprietaire());
-            reservation.setStatut(EStatutReservation.EN_ATTENTE);
-            reservation.setDateReservation(LocalDateTime.now());
-
-            List<Reservation> reservationsExistantes = reservationRepository
-                    .findByBienImmobilierIdAndStatut(bienId, EStatutReservation.CONFIRMEE);
-
-            for (Reservation existante : reservationsExistantes) {
-                boolean chevauchement = reservation.getDateDebut().isBefore(existante.getDateFin()) &&
-                        reservation.getDateFin().isAfter(existante.getDateDebut());
-                if (chevauchement) {
-                    throw new RuntimeException("Le bien est déjà réservé sur cette période.");
-                }
-            }
-            Reservation saved = reservationRepository.save(reservation);
-            String sujet = "Nouvelle réservation reçue";
-            String message = "Bonjour " + bien.getProprietaire().getNom() + ",<br><br>" +
-                    "Vous avez reçu une nouvelle réservation pour votre bien situé à : <strong>" + bien.getAdresse() + "</strong>.<br><br>" +
-                    "Client : <strong>" + utilisateur.getNom() + " " + utilisateur.getPrenom() + "</strong><br>" +
-                    "Email du client : <strong>" + utilisateur.getEmail() + "</strong><br><br>" +
-                    "Veuillez vous connecter pour confirmer ou refuser cette réservation.<br><br>" +
-                    "Cordialement,<br>L'équipe de Gestion Immobilière";
-
-            emailService.envoyerEmail(bien.getProprietaire().getEmail(), sujet, message);
-            return reservationMapper.toDTO(saved);
+    @Override
+    public ReservationDTO creerReservation(Reservation reservation, Long bienId) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token manquant ou invalide.");
         }
+        String token = authHeader.substring(7);
+        String email = jwtService.extractEmail(token);
+        Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        BienImmobilier bien = bienImmobilierRepository.findById(bienId)
+                .orElseThrow(() -> new RuntimeException("Bien non trouvé"));
+
+        reservation.setUtilisateur(utilisateur);
+        reservation.setBienImmobilier(bien);
+        reservation.setPropietaire(bien.getProprietaire());
+        reservation.setStatut(EStatutReservation.EN_ATTENTE);
+        reservation.setDateReservation(LocalDateTime.now());
+
+        // Vérifier les chevauchements
+        List<Reservation> reservationsExistantes = reservationRepository
+                .findByBienImmobilierIdAndStatut(bienId, EStatutReservation.CONFIRMEE);
+
+        for (Reservation existante : reservationsExistantes) {
+            boolean chevauchement = reservation.getDateDebut().isBefore(existante.getDateFin()) &&
+                    reservation.getDateFin().isAfter(existante.getDateDebut());
+            if (chevauchement) {
+                throw new RuntimeException("Le bien est déjà réservé sur cette période.");
+            }
+        }
+
+        Reservation saved = reservationRepository.save(reservation);
+
+        // ✉️ Email au propriétaire
+        String sujet = "Nouvelle réservation reçue";
+        String message = "Bonjour " + bien.getProprietaire().getNom() + ",<br><br>" +
+                "Vous avez reçu une nouvelle réservation pour votre bien situé à : <strong>" + bien.getAdresse() + "</strong>.<br><br>" +
+                "Client : <strong>" + utilisateur.getNom() + " " + utilisateur.getPrenom() + "</strong><br>" +
+                "Email du client : <strong>" + utilisateur.getEmail() + "</strong><br><br>" +
+                "Veuillez vous connecter pour confirmer ou refuser cette réservation.<br><br>" +
+                "Cordialement,<br>L'équipe de Gestion Immobilière";
+
+        emailService.envoyerEmail(bien.getProprietaire().getEmail(), sujet, message);
+
+        // 🔔 Notification propriétaire
+        String messageNot = String.format(
+                "Nouvelle réservation pour %s par %s %s (Email: %s)",
+                bien.getTitre(),
+                utilisateur.getPrenom(),
+                utilisateur.getNom(),
+                utilisateur.getEmail()
+        );
+
+        NotificationDTO notification = new NotificationDTO(
+                messageNot,
+                ENotificationType.NOUVELLE_RESERVATION,
+                saved.getId()
+        );
+
+        notificationService.envoyerNotification(bien.getProprietaire(), notification);
+
+
+        return reservationMapper.toDTO(saved);
+    }
+
     @Override
     public List<IndisponibiliteDTO> getIndisponibilitesParBien(Long bienId) {
         List<Reservation> reservations = reservationRepository.findByBienImmobilierIdAndStatut(bienId, EStatutReservation.CONFIRMEE);
-
         return reservations.stream()
                 .map(res -> new IndisponibiliteDTO(res.getDateDebut(), res.getDateFin()))
                 .collect(Collectors.toList());
@@ -99,7 +118,20 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setConfirmeParProprietaire(true);
         reservationRepository.save(reservation);
 
-        // Annuler les autres réservations en attente pour le même bien
+        String message = String.format(
+                "Votre réservation pour %s a été confirmée",
+                reservation.getBienImmobilier().getTitre()
+        );
+
+        NotificationDTO notification = new NotificationDTO(
+                message,
+                ENotificationType.RESERVATION_CONFIRMEE,
+                reservation.getId()
+        );
+
+        notificationService.envoyerNotification(reservation.getUtilisateur(), notification);
+
+        // Annuler les autres réservations en attente
         List<Reservation> autresReservations = reservationRepository
                 .findByBienImmobilierIdAndStatutAndIdNot(
                         reservation.getBienImmobilier().getId(),
@@ -110,8 +142,8 @@ public class ReservationServiceImpl implements ReservationService {
         for (Reservation r : autresReservations) {
             r.setStatut(EStatutReservation.ANNULEE);
         }
-
         reservationRepository.saveAll(autresReservations);
+
         return reservationMapper.toDTO(reservation);
     }
 
@@ -121,7 +153,22 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new RuntimeException("Réservation non trouvée"));
         reservation.setAnnuleParClient(true);
         reservation.setStatut(EStatutReservation.ANNULEE);
+        String message = String.format(
+                "Réservation #%d annulée par %s %s",
+                reservation.getId(),
+                reservation.getUtilisateur().getPrenom(),
+                reservation.getUtilisateur().getNom()
+        );
+
+        NotificationDTO notification = new NotificationDTO(
+                message,
+                ENotificationType.RESERVATION_ANNULEE,
+                reservation.getId()
+        );
+
+        notificationService.envoyerNotification(reservation.getPropietaire(), notification);
         reservationRepository.save(reservation);
+
     }
 
     @Override
@@ -130,9 +177,7 @@ public class ReservationServiceImpl implements ReservationService {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Token manquant ou invalide.");
         }
-        String token = authHeader.substring(7); // Remove "Bearer "
-
-        // 🔐 Extraire l'email depuis le token
+        String token = authHeader.substring(7);
         String email = jwtService.extractEmail(token);
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
@@ -141,15 +186,14 @@ public class ReservationServiceImpl implements ReservationService {
                 .map(reservationMapper::toDTO)
                 .toList();
     }
+
     @Override
     public List<ReservationDTO> getReservationsParProprietaire() {
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Token manquant ou invalide.");
         }
-        String token = authHeader.substring(7); // Remove "Bearer "
-
-        // 🔐 Extraire l'email depuis le token
+        String token = authHeader.substring(7);
         String email = jwtService.extractEmail(token);
         Utilisateur utilisateur = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));

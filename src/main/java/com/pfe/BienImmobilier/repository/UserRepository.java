@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,4 +47,10 @@ public interface UserRepository extends JpaRepository<Utilisateur, Long> {
 
     Optional<Utilisateur> findByEmail(String email);
     boolean existsByEmail(String email);
+
+    @Query("SELECT COUNT(*) FROM Utilisateur" )
+    long countByCreatedAtAfter();
+
+    @Query("SELECT COUNT(DISTINCT r.utilisateur) FROM Reservation r WHERE r.dateReservation >= :date")
+    long countActiveUsers(@Param("date") LocalDateTime date);
 }

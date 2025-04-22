@@ -2,7 +2,7 @@ package com.pfe.BienImmobilier.services.impl;
 
 import com.pfe.BienImmobilier.entities.Utilisateur;
 import com.pfe.BienImmobilier.repository.UserRepository;
-import com.pfe.BienImmobilier.util.JwtUtil;
+import com.pfe.BienImmobilier.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

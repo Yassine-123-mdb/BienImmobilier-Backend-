@@ -5,7 +5,7 @@ import com.pfe.BienImmobilier.model.*;
 
 import com.pfe.BienImmobilier.services.impl.AuthService;
 import com.pfe.BienImmobilier.services.impl.PasswordResetService;
-import com.pfe.BienImmobilier.util.JwtUtil;
+import com.pfe.BienImmobilier.security.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

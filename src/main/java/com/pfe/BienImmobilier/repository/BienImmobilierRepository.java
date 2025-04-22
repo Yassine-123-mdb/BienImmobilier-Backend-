@@ -3,9 +3,11 @@ package com.pfe.BienImmobilier.repository;
 import com.pfe.BienImmobilier.entities.BienImmobilier;
 import com.pfe.BienImmobilier.entities.TypeTransaction;
 import com.pfe.BienImmobilier.entities.Utilisateur;
+import jakarta.persistence.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BienImmobilierRepository extends JpaRepository<BienImmobilier, Long> {
+public interface BienImmobilierRepository extends JpaRepository<BienImmobilier, Long>, JpaSpecificationExecutor<BienImmobilier> {
 
     List<BienImmobilier> findByProprietaire(Utilisateur proprietaire);
     @Query("SELECT b FROM BienImmobilier b WHERE " +
@@ -59,4 +61,13 @@ public interface BienImmobilierRepository extends JpaRepository<BienImmobilier, 
 
     @Query("SELECT b FROM BienImmobilier b WHERE b.categorie.nom = :categorie ORDER BY b.dateAjout DESC LIMIT 5")
     List<BienImmobilier> findByCategorie(@Param("categorie") String categorie);
+
+    @Query("SELECT COUNT(b) FROM BienImmobilier b WHERE b.isVerifieAdmin = :status")
+    long countByIsVerifieAdmin(@Param("status") int status);
+
+    @Query("SELECT b.categorie.nom, COUNT(b) FROM BienImmobilier b GROUP BY b.categorie.nom")
+    List<Tuple> countPropertiesByCategory();
+
+    @Query("SELECT COALESCE(SUM(b.views), 0) FROM BienImmobilier b")
+    long sumAllViews();
 }

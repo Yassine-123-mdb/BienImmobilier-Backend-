@@ -6,11 +6,13 @@ import com.pfe.BienImmobilier.model.BienImmobilierDTO;
 import com.pfe.BienImmobilier.model.BienImmobilierFilterDTO;
 import com.pfe.BienImmobilier.repository.BienImmobilierRepository;
 import com.pfe.BienImmobilier.repository.UserRepository;
-import com.pfe.BienImmobilier.util.JwtUtil;
+import com.pfe.BienImmobilier.security.JwtUtil;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
@@ -137,7 +139,17 @@ public class BienImmobilierServiceImpl {
     public BienImmobilierDTO updateBien(Long id, BienImmobilier bienDetails) {
         BienImmobilier bien = bienImmobilierRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bien non trouvé"));
+        Commune commune = bienDetails.getCommune();
+        if (commune == null || commune.getId() == null) {
+            throw new RuntimeException("La commune est requise pour créer un bien.");
+        }
+        commune = communeService.getCommuneById(commune.getId());
+        Gouvernorat gouvernorat = commune.getGouvernorat();
 
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token manquant ou invalide.");
+        }
         bien.setTitre(bienDetails.getTitre());
         bien.setDescription(bienDetails.getDescription());
         bien.setAdresse(bienDetails.getAdresse());
@@ -148,20 +160,56 @@ public class BienImmobilierServiceImpl {
         bien.setSurface(bienDetails.getSurface());
         bien.setLocalisation(bienDetails.getLocalisation());
 
-        // Mise à jour de la commune et gouvernorat
-        if (bienDetails.getCommune() != null && bienDetails.getCommune().getId() != null) {
-            Commune commune = communeService.getCommuneById(bienDetails.getCommune().getId());
-            bien.setCommune(commune);
-            bien.setGouvernorat(commune.getGouvernorat());
-        }
+        bien.setCommune(commune);
+        bien.setGouvernorat(gouvernorat);
 
         BienImmobilier updatedBien = bienImmobilierRepository.save(bien);
         return bienImmobilierMapper.toDTO(updatedBien);
     }
 
+
     public void deleteBien(Long id) {
         BienImmobilier bien = bienImmobilierRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Bien non trouvé"));
         bienImmobilierRepository.delete(bien);
+    }
+    public Page<BienImmobilierDTO> getAnnoncesAdmin(
+            Integer statut,
+            String categorie,
+            String search,
+            Pageable pageable) {
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token manquant ou invalide.");
+        }
+        Specification<BienImmobilier> spec = Specification.where(null);
+
+        if (statut != null) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("isVerifieAdmin"), statut));
+        }
+
+        if (categorie != null && !categorie.equals("Tous")) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.join("categorie").get("nom"), categorie));
+        }
+
+        if (search != null && !search.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("titre")), "%" + search.toLowerCase() + "%"));
+        }
+
+        return bienImmobilierRepository.findAll(spec, pageable)
+                .map(bienImmobilierMapper::toDTO);
+    }
+
+    public void updateStatutAdmin(Long id, Integer newStatut) {
+        BienImmobilier bien = bienImmobilierRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Annonce non trouvée"));
+        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Token manquant ou invalide.");
+        }
+        bien.setIsVerifieAdmin(newStatut);
+        bienImmobilierRepository.save(bien);
     }
 }

@@ -22,28 +22,28 @@ public interface FavorisMapper {
     FavorisMapper INSTANCE = Mappers.getMapper(FavorisMapper.class);
 
     // Mapping de BienImmobilier vers BienImmobilierDTO
-    @Mapping(source = "categorie", target = "categorie", qualifiedByName = "mapCategorie")
-    @Mapping(source = "commune", target = "commune", qualifiedByName = "mapCommune")
-    @Mapping(source = "avis", target = "avis", qualifiedByName = "mapAvis")
+//    @Mapping(source = "categorie", target = "categorie", qualifiedByName = "mapCategorie")
+//    @Mapping(source = "commune", target = "commune", qualifiedByName = "mapCommune")
+//    @Mapping(source = "avis", target = "avis", qualifiedByName = "mapAvis")
     @Mapping(source = "utilisateursFavoris", target = "utilisateursFavoris", qualifiedByName = "mapUtilisateursFavoris")
     @Mapping(source = "images", target = "images", qualifiedByName = "mapImages")
-    @Mapping(source = "gouvernorat", target = "gouvernorat", qualifiedByName = "mapGouvernorat")
-    @Mapping(source = "proprietaire", target = "proprietaire", qualifiedByName = "mapProprietaire")  // Ajout du mappage
+//    @Mapping(source = "gouvernorat", target = "gouvernorat", qualifiedByName = "mapGouvernorat")
+//    @Mapping(source = "proprietaire", target = "proprietaire", qualifiedByName = "mapProprietaire")  // Ajout du mappage
     BienImmobilierDTO mapToModel(BienImmobilier bienImmobilier);
 
     List<BienImmobilierDTO> mapToModels(List<BienImmobilier> biensImmobiliers);
 
     // Méthode de conversion pour "Categorie" vers "String"
-    @Named("mapCategorie")
-    default String mapCategorie(Categorie categorie) {
-        return categorie != null ? categorie.getNom() : null;
-    }
+//    @Named("mapCategorie")
+//    default String mapCategorie(Categorie categorie) {
+//        return categorie != null ? categorie.getNom() : null;
+//    }
 
     // Méthode de conversion pour "Commune" vers "String"
-    @Named("mapCommune")
-    default String mapCommune(Commune commune) {
-        return commune != null ? commune.getNom() : null;
-    }
+//    @Named("mapCommune")
+//    default String mapCommune(Commune commune) {
+//        return commune != null ? commune.getNom() : null;
+//    }
 
     // Méthode de conversion pour "Utilisateur" vers "String"
     @Named("mapUtilisateur")
@@ -52,10 +52,10 @@ public interface FavorisMapper {
     }
 
     // Méthode de conversion pour "Avis" vers "String" (par exemple, le contenu de l'avis)
-    @Named("mapAvis")
-    default List<String> mapAvis(List<Avis> avisList) {
-        return avisList != null ? avisList.stream().map(Avis::getCommentaire).collect(Collectors.toList()) : null;
-    }
+//    @Named("mapAvis")
+//    default List<String> mapAvis(List<Avis> avisList) {
+//        return avisList != null ? avisList.stream().map(Avis::getCommentaire).collect(Collectors.toList()) : null;
+//    }
 
     // Méthode de conversion pour "Set<Utilisateur>" vers "Set<Long>" (extraction des IDs des utilisateurs)
     @Named("mapUtilisateursFavoris")
@@ -71,10 +71,10 @@ public interface FavorisMapper {
         }
         return images.stream().map(Image::getName).collect(Collectors.toList());
     }
-    @Named("mapGouvernorat")
-    default String mapGouvernorat(Gouvernorat gouvernorat) {
-        return gouvernorat != null ? gouvernorat.getNom() : null;
-    }
+//    @Named("mapGouvernorat")
+//    default String mapGouvernorat(Gouvernorat gouvernorat) {
+//        return gouvernorat != null ? gouvernorat.getNom() : null;
+//    }
     // Ajoutez cette méthode pour mapper un "Utilisateur" vers "String" pour le champ "proprietaire"
     @Named("mapProprietaire")
     default String mapProprietaire(Utilisateur proprietaire) {

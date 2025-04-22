@@ -56,7 +56,10 @@ public class BienImmobilier {
     private Integer nombresEtages;        // Spécifique à Appartement
     private double superficie;            // Spécifique à Terrain
     private Boolean constructible = false;        // Utilisation de Boolean pour accepter null
-    private Boolean isVerifieAdmin = false; // Utilisation de Boolean pour accepter null
+
+    private Integer views;
+    @Column(name = "is_verifie_admin", columnDefinition = "integer default 0")
+    private Integer isVerifieAdmin = 0; // Utilisation de Boolean pour accepter null
 
     @ManyToOne
     @JoinColumn(name = "categorie_id")
@@ -74,6 +77,9 @@ public class BienImmobilier {
     @JoinColumn(name = "gouvernorat_id")
     private Gouvernorat gouvernorat;
 
+    @Transient
+    private Long gouvernoratId;
+
     @ManyToOne
     @JoinColumn(name = "commune_id")
     private Commune commune;
@@ -86,4 +92,12 @@ public class BienImmobilier {
 
     @ManyToMany(mappedBy = "favoris")
     private Set<Utilisateur> utilisateursFavoris = new HashSet<>();
+
+    public String getStatutAdmin() {
+        return switch (this.isVerifieAdmin) {
+            case 1 -> "Approuvé";
+            case -1 -> "Refusé";
+            default -> "En attente";
+        };
+    }
 }

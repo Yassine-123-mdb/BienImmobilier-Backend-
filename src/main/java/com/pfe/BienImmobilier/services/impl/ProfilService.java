@@ -5,7 +5,7 @@ import com.pfe.BienImmobilier.mapper.UtilisateurMapper;
 import com.pfe.BienImmobilier.model.UpdateProfileRequest;
 import com.pfe.BienImmobilier.model.UtilisateurResponse;
 import com.pfe.BienImmobilier.repository.UserRepository;
-import com.pfe.BienImmobilier.util.JwtUtil;
+import com.pfe.BienImmobilier.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
