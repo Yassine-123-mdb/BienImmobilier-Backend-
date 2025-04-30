@@ -2,6 +2,7 @@ package com.pfe.BienImmobilier.repository;
 
 
 
+import com.pfe.BienImmobilier.entities.RoleType;
 import com.pfe.BienImmobilier.entities.Utilisateur;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -53,4 +54,7 @@ public interface UserRepository extends JpaRepository<Utilisateur, Long> {
 
     @Query("SELECT COUNT(DISTINCT r.utilisateur) FROM Reservation r WHERE r.dateReservation >= :date")
     long countActiveUsers(@Param("date") LocalDateTime date);
+    @Query("SELECT u FROM Utilisateur u JOIN u.roles r WHERE r.roleType = :roleType")
+    List<Utilisateur> findByRoleType(@Param("roleType") RoleType roleType);
+
 }

@@ -3,6 +3,7 @@ package com.pfe.BienImmobilier.entities;
 
 public enum ENotificationType {
     NOUVELLE_RESERVATION("nouvelle-reservation", "Nouvelle réservation"),
+    NOUVEL_ANNOCE("Nouvelle-annonce","Nouvelle Annonce"),
     RESERVATION_CONFIRMEE("reservation-confirmee", "Réservation confirmée"),
     RESERVATION_ANNULEE("reservation-annulee", "Réservation annulée"),
     PAIEMENT_EFFECTUE("paiement-effectue", "Paiement effectué"),

@@ -4,9 +4,11 @@ import com.pfe.BienImmobilier.entities.*;
 import com.pfe.BienImmobilier.mapper.BienImmobilierMapper;
 import com.pfe.BienImmobilier.model.BienImmobilierDTO;
 import com.pfe.BienImmobilier.model.BienImmobilierFilterDTO;
+import com.pfe.BienImmobilier.model.NotificationDTO;
 import com.pfe.BienImmobilier.repository.BienImmobilierRepository;
 import com.pfe.BienImmobilier.repository.UserRepository;
 import com.pfe.BienImmobilier.security.JwtUtil;
+import com.pfe.BienImmobilier.services.inter.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,7 @@ public class BienImmobilierServiceImpl {
     private final JwtUtil jwtUtils;
     private final HttpServletRequest request;
     private final UserRepository utilisateurRepository;
-
+    private final NotificationService notificationService;
     public Page<BienImmobilierDTO> searchBiens(BienImmobilierFilterDTO filter, Pageable pageable) {
         TypeTransaction typeTransaction = null;
         if (filter.getTypeTransaction() != null && !filter.getTypeTransaction().isEmpty()) {
@@ -133,6 +135,24 @@ public class BienImmobilierServiceImpl {
         bien.setGouvernorat(gouvernorat);
 
         BienImmobilier savedBien = bienImmobilierRepository.save(bien);
+
+        List<Utilisateur> admins = utilisateurRepository.findByRoleType(RoleType.ADMIN);
+
+        String messageNotif = String.format(
+                "Nouveau bien ajouté par %s %s : %s",
+                proprietaire.getPrenom(),
+                proprietaire.getNom(),
+                savedBien.getTitre()
+        );
+
+        NotificationDTO notif = new NotificationDTO(
+                messageNotif,
+                ENotificationType.NOUVEL_ANNOCE,
+                savedBien.getId()
+        );
+
+        admins.forEach(admin -> notificationService.envoyerNotification(admin, notif));
+
         return bienImmobilierMapper.toDTO(savedBien);
     }
 
