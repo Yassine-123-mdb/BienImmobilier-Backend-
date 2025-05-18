@@ -35,11 +35,17 @@ public class ReservationController {
 
     @PostMapping("/proprietaire/{id}/annuler")
     public ResponseEntity<Void> annuler(@PathVariable Long id) {
-        reservationService.annulerReservationParClient(id);
+        reservationService.annulerReservationParProp(id);
+        return ResponseEntity.ok().build();
+    }
+    @PatchMapping("user/annuler/{id}")
+    public ResponseEntity<Void> annulerParClient(@PathVariable("id") Long reservationId) {
+        reservationService.annulerReservationParClient(reservationId);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/user")
+
+    @GetMapping("/user/reservation")
     public ResponseEntity<List<ReservationDTO>> getByUser() {
         return ResponseEntity.ok(reservationService.getReservationsParUtilisateur());
     }
@@ -58,4 +64,5 @@ public class ReservationController {
         List<IndisponibiliteDTO> indisponibilites = reservationService.getIndisponibilitesParBien(id);
         return ResponseEntity.ok(indisponibilites);
     }
+
 }

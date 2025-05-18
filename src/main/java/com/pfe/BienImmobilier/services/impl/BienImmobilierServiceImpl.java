@@ -1,6 +1,7 @@
 package com.pfe.BienImmobilier.services.impl;
 
 import com.pfe.BienImmobilier.entities.*;
+import com.pfe.BienImmobilier.exceptions.NotFoundException;
 import com.pfe.BienImmobilier.mapper.BienImmobilierMapper;
 import com.pfe.BienImmobilier.model.BienImmobilierDTO;
 import com.pfe.BienImmobilier.model.BienImmobilierFilterDTO;
@@ -11,6 +12,7 @@ import com.pfe.BienImmobilier.security.JwtUtil;
 import com.pfe.BienImmobilier.services.inter.NotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -64,7 +66,14 @@ public class BienImmobilierServiceImpl {
         System.out.println("bien: " + biens);
         return biens.map(bienImmobilierMapper::toDTO);
     }
+    @Transactional
+    public void incrementerViews(Long bienId) {
+        BienImmobilier bien = bienImmobilierRepository.findById(bienId)
+                .orElseThrow(() -> new NotFoundException("Bien non trouvé"));
 
+        bien.setViews(bien.getViews() + 1);
+        bienImmobilierRepository.save(bien);
+    }
     public List<BienImmobilierDTO> getTopOffers() {
         return bienImmobilierRepository.findTopOffers().stream()
                 .map(bienImmobilierMapper::toDTO)

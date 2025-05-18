@@ -13,5 +13,6 @@ public interface ReservationService {
     List<ReservationDTO> getReservationsParUtilisateur();
     List<ReservationDTO> getReservationsParProprietaire();
     List<ReservationDTO> getReservationsParBien(Long bienId);
+    public void annulerReservationParProp(Long reservationId);
     List<IndisponibiliteDTO> getIndisponibilitesParBien(Long bienId);
 }

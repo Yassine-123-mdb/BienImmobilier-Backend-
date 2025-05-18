@@ -14,6 +14,7 @@ public class ReservationDTO {
     private LocalDateTime dateFin;
     private LocalDateTime dateReservation;
     private String statut;
+    private double TotalPrice;
     private Long utilisateurId;
     private UtilisateurDTO client;
     private BienImmobilierDTO bien;

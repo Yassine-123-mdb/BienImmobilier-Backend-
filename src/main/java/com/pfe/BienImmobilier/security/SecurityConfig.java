@@ -40,9 +40,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**","/api/biens/user/search/**","api/admin/users/**","/api/notifications/**","/ws"
+                        .requestMatchers("/api/auth/**","/api/biens/user/search/**","api/admin/users/**","/api/notifications/**","/api/messages/{bienId}","/ws/**"
                                 ,"/api/admin/annonces/**","/api/admin/statistics/**",
-                                "/api/paymee/**","/api/abonnements/**").permitAll()
+                                "/api/biens/user/{bienId}/view","/api/abonnements/**","/api/dashboard/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/biens/user/**","/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/gouvernorats/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()
@@ -51,7 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/proprietaire/**","/api/images/upload/**","/api/reservations/proprietaire/**").hasAuthority("PROPRIETAIRE")
                         .requestMatchers("/api/reservations/bien/${bienId}/indisponibilites",
                                 "/api/reservations/${bienId}","/api/avis/**",
-                                "/api/profil/**","/api/images/user/**").hasAuthority("VISITEUR")
+                                "/api/profil/**","/api/images/user/**","api/user/annuler/{id}","api/user/reservation").hasAuthority("VISITEUR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

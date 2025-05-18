@@ -25,7 +25,7 @@ public class Reservation {
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime dateReservation;
-    private Integer totalPrice;
+    private double totalPrice;
 
     // Statut de la réservation
     @Enumerated(EnumType.STRING)

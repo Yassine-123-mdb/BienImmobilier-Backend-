@@ -115,40 +115,47 @@ public class ReservationServiceImpl implements ReservationService {
                 .orElseThrow(() -> new RuntimeException("Réservation non trouvée"));
 
         reservation.setStatut(EStatutReservation.CONFIRMEE);
+        reservation.setTotalPrice(reservation.getBienImmobilier().getPrix());
         reservation.setConfirmeParProprietaire(true);
         reservationRepository.save(reservation);
 
+        // Notifier le client
         String message = String.format(
                 "Votre réservation pour %s a été confirmée",
                 reservation.getBienImmobilier().getTitre()
         );
-
         NotificationDTO notification = new NotificationDTO(
                 message,
                 ENotificationType.RESERVATION_CONFIRMEE,
                 reservation.getId()
         );
-
         notificationService.envoyerNotification(reservation.getUtilisateur(), notification);
 
-        // Annuler les autres réservations en attente
-        List<Reservation> autresReservations = reservationRepository
+        // Annuler uniquement les réservations en conflit (même bien, statut EN_ATTENTE, dates qui se chevauchent)
+        List<Reservation> concurrentes = reservationRepository
                 .findByBienImmobilierIdAndStatutAndIdNot(
                         reservation.getBienImmobilier().getId(),
                         EStatutReservation.EN_ATTENTE,
                         reservation.getId()
                 );
 
-        for (Reservation r : autresReservations) {
-            r.setStatut(EStatutReservation.ANNULEE);
+        for (Reservation r : concurrentes) {
+            boolean chevauche = reservation.getDateDebut().isBefore(r.getDateFin()) &&
+                    reservation.getDateFin().isAfter(r.getDateDebut());
+
+            if (chevauche) {
+                r.setStatut(EStatutReservation.ANNULEE);
+            }
         }
-        reservationRepository.saveAll(autresReservations);
+
+        reservationRepository.saveAll(concurrentes);
 
         return reservationMapper.toDTO(reservation);
     }
 
+
     @Override
-    public void annulerReservationParClient(Long reservationId) {
+    public void annulerReservationParProp(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("Réservation non trouvée"));
         reservation.setAnnuleParClient(true);
@@ -169,6 +176,44 @@ public class ReservationServiceImpl implements ReservationService {
         notificationService.envoyerNotification(reservation.getPropietaire(), notification);
         reservationRepository.save(reservation);
 
+    }
+    @Override
+    public void annulerReservationParClient(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Réservation non trouvée"));
+
+        reservation.setAnnuleParClient(true);
+        reservation.setStatut(EStatutReservation.ANNULEE);
+
+        // 🔔 Notification au propriétaire
+        String notifMessage = String.format(
+                "La réservation du bien '%s' a été annulée par le client %s %s",
+                reservation.getBienImmobilier().getTitre(),
+                reservation.getUtilisateur().getPrenom(),
+                reservation.getUtilisateur().getNom()
+        );
+
+        NotificationDTO notification = new NotificationDTO(
+                notifMessage,
+                ENotificationType.RESERVATION_ANNULEE,
+                reservation.getId()
+        );
+
+        notificationService.envoyerNotification(reservation.getPropietaire(), notification);
+
+        // 📩 Email au propriétaire
+        String emailSujet = "Réservation annulée par le client";
+        String emailMessage = "Bonjour " + reservation.getPropietaire().getNom() + ",<br><br>" +
+                "Le client <strong>" + reservation.getUtilisateur().getPrenom() + " " + reservation.getUtilisateur().getNom() + "</strong> " +
+                "a annulé la réservation du bien situé à : <strong>" + reservation.getBienImmobilier().getAdresse() + "</strong>.<br><br>" +
+                "Période initiale : du <strong>" + reservation.getDateDebut() + "</strong> au <strong>" + reservation.getDateFin() + "</strong><br><br>" +
+                "Merci de vérifier les nouvelles disponibilités dans votre espace propriétaire.<br><br>" +
+                "Cordialement,<br>L'équipe de Gestion Immobilière";
+
+        emailService.envoyerEmail(reservation.getPropietaire().getEmail(), emailSujet, emailMessage);
+
+        // 💾 Sauvegarde
+        reservationRepository.save(reservation);
     }
 
     @Override

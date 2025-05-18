@@ -57,7 +57,7 @@ public class BienImmobilier {
     private double superficie;            // Spécifique à Terrain
     private Boolean constructible = false;        // Utilisation de Boolean pour accepter null
 
-    private Integer views;
+    private Integer views = 0;
     @Column(name = "is_verifie_admin", columnDefinition = "integer default 0")
     private Integer isVerifieAdmin = 0; // Utilisation de Boolean pour accepter null
 

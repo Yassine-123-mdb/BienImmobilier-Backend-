@@ -20,6 +20,11 @@ import java.util.List;
 public class BienImmobilierController {
 
     private final BienImmobilierServiceImpl bienImmobilierService;
+    @PutMapping("/biens/user/{bienId}/view")
+    public ResponseEntity<Void> incrementView(@PathVariable Long bienId) {
+        bienImmobilierService.incrementerViews(bienId); // Incrémenter le nombre de vues
+        return ResponseEntity.ok().build(); // Retourner une réponse vide
+    }
     @PostMapping("/biens/user/search")
     public ResponseEntity<Page<BienImmobilierDTO>> searchBiens(
             @RequestBody BienImmobilierFilterDTO filter, Pageable pageable) {

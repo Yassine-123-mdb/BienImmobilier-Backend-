@@ -15,7 +15,10 @@ import java.util.List;
 public class UtilisateurDTO {
     private Long id;
     private String nom;
+    private String prenom;
     private String email;
     private List<Role> roles;
+
+
 }
 

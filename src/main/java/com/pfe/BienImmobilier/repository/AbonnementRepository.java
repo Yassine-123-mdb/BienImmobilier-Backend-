@@ -10,5 +10,6 @@ public interface AbonnementRepository extends JpaRepository<Abonnement, Long> {
     List<Abonnement> findByUtilisateurId(Long userId);
     Optional<Abonnement> findByUtilisateurIdAndStatus(Long utilisateurId, AbonnementStatus status);
     Optional<Abonnement> findByPaymentToken(String paymentToken);
+    List<Abonnement> findByUtilisateurIdOrderByDateFinDesc(Long utilisateurId);
 
 }
